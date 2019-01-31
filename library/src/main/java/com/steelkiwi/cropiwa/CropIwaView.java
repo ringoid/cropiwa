@@ -10,6 +10,7 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.widget.FrameLayout;
 
+import androidx.annotation.Nullable;
 import com.steelkiwi.cropiwa.config.ConfigChangeListener;
 import com.steelkiwi.cropiwa.config.CropIwaImageViewConfig;
 import com.steelkiwi.cropiwa.config.CropIwaOverlayConfig;
@@ -39,6 +40,7 @@ public class CropIwaView extends FrameLayout {
 
     private ErrorListener errorListener;
     private CropSaveCompleteListener cropSaveCompleteListener;
+    private OnImageLoadListener onImageLoadListener;
 
     private CropIwaResultReceiver cropIwaResultReceiver;
 
@@ -163,11 +165,15 @@ public class CropIwaView extends FrameLayout {
         return imageConfig;
     }
 
+    public void setOnImageLoadListener(@Nullable OnImageLoadListener l) {
+        onImageLoadListener = l;
+    }
+
     public void setImageUri(Uri uri) {
         imageUri = uri;
         loadBitmapCommand = new LoadBitmapCommand(
                 uri, getWidth(), getHeight(),
-                new BitmapLoadListener());
+                new BitmapLoadListener(onImageLoadListener));
         loadBitmapCommand.tryExecute(getContext());
     }
 
@@ -210,9 +216,18 @@ public class CropIwaView extends FrameLayout {
 
     private class BitmapLoadListener implements CropIwaBitmapManager.BitmapLoadListener {
 
+        private OnImageLoadListener listener;
+
+        private BitmapLoadListener(@Nullable  OnImageLoadListener l) {
+            listener = l;
+        }
+
         @Override
         public void onBitmapLoaded(Uri imageUri, Bitmap bitmap) {
             setImage(bitmap);
+            if (listener != null) {
+                listener.onSuccess(imageUri);
+            }
         }
 
         @Override
@@ -221,6 +236,9 @@ public class CropIwaView extends FrameLayout {
             overlayView.setDrawOverlay(false);
             if (errorListener != null) {
                 errorListener.onError(e);
+            }
+            if (listener != null) {
+                listener.onFailure(e);
             }
         }
     }
