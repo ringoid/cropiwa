@@ -28,6 +28,7 @@ class CropIwaOverlayView extends View implements ConfigChangeListener, OnImagePo
     private RectF imageBounds;
 
     protected RectF cropRect;
+    protected RectF innerBorderPaint;
     protected CropIwaOverlayConfig config;
 
     protected boolean shouldDrawOverlay;
@@ -46,6 +47,7 @@ class CropIwaOverlayView extends View implements ConfigChangeListener, OnImagePo
         cropShape = c.getCropShape();
 
         cropRect = new RectF();
+        innerBorderPaint = new RectF();
 
         overlayPaint = new Paint();
         overlayPaint.setStyle(Paint.Style.FILL);
@@ -78,7 +80,7 @@ class CropIwaOverlayView extends View implements ConfigChangeListener, OnImagePo
         if (shouldDrawOverlay) {
             canvas.drawRect(0, 0, getWidth(), getHeight(), overlayPaint);
             if (isValidCrop()) {
-                cropShape.draw(canvas, cropRect);
+                cropShape.draw(canvas, cropRect, innerBorderPaint);
             }
         }
     }
@@ -159,16 +161,22 @@ class CropIwaOverlayView extends View implements ConfigChangeListener, OnImagePo
                         || (aspectRatio.isSquare() && viewWidth < viewHeight);
 
         if (calculateFromWidth) {
-            halfWidth = viewWidth * cropScale * 0.5f - 56;
+            halfWidth = viewWidth * cropScale * 0.5f - 48;
             halfHeight = halfWidth / aspectRatio.getRatio();
         } else {
-            halfHeight = viewHeight * cropScale * 0.5f - 56;
+            halfHeight = viewHeight * cropScale * 0.5f - 48;
             halfWidth = halfHeight * aspectRatio.getRatio();
         }
 
         cropRect.set(
                 centerX - halfWidth, centerY - halfHeight,
                 centerX + halfWidth, centerY + halfHeight);
+
+        float borderW = cropShape.getOverlayConfig().getBorderStrokeWidth();
+        float innerBorderW = borderW * CropIwaOverlayConfig.INNER_BORDER_FACTOR;
+        float borderShift = borderW - innerBorderW;
+        innerBorderPaint.set(cropRect.left + borderShift, cropRect.top + borderShift,
+                            cropRect.right - borderShift, cropRect.bottom - borderShift);
     }
 
     @Nullable

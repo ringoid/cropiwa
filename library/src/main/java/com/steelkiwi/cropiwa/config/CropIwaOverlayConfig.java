@@ -22,6 +22,7 @@ import java.util.List;
 public class CropIwaOverlayConfig {
 
     private static final float DEFAULT_CROP_SCALE = 0.8f;
+    public static final float INNER_BORDER_FACTOR = 0.7f;
 
     public static CropIwaOverlayConfig createDefault(Context context) {
         ResUtil r = new ResUtil(context);

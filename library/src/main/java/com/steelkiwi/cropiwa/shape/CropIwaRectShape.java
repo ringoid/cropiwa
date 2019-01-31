@@ -28,6 +28,11 @@ public class CropIwaRectShape extends CropIwaShape {
     }
 
     @Override
+    protected void drawInnerBorders(Canvas canvas, RectF cropBounds, Paint paint) {
+        canvas.drawRect(cropBounds, paint);
+    }
+
+    @Override
     public CropIwaShapeMask getMask() {
         return new RectShapeMask();
     }

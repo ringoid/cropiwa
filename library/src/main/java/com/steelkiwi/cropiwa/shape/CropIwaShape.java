@@ -1,10 +1,6 @@
 package com.steelkiwi.cropiwa.shape;
 
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
-import android.graphics.RectF;
+import android.graphics.*;
 
 import com.steelkiwi.cropiwa.CropIwaView;
 import com.steelkiwi.cropiwa.config.ConfigChangeListener;
@@ -20,8 +16,13 @@ public abstract class CropIwaShape implements ConfigChangeListener {
     private Paint cornerPaint;
     private Paint gridPaint;
     private Paint borderPaint;
+    private Paint innerBorderPaint;
 
     protected CropIwaOverlayConfig overlayConfig;
+
+    public CropIwaOverlayConfig getOverlayConfig() {
+        return overlayConfig;
+    }
 
     public CropIwaShape(CropIwaView cropIwaView) {
         this(cropIwaView.configureOverlay());
@@ -38,6 +39,7 @@ public abstract class CropIwaShape implements ConfigChangeListener {
         gridPaint.setStrokeCap(Paint.Cap.SQUARE);
 
         borderPaint = new Paint(gridPaint);
+        innerBorderPaint = new Paint(borderPaint);
 
         cornerPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         cornerPaint.setStyle(Paint.Style.STROKE);
@@ -46,12 +48,13 @@ public abstract class CropIwaShape implements ConfigChangeListener {
         updatePaintObjectsFromConfig();
     }
 
-    public final void draw(Canvas canvas, RectF cropBounds) {
+    public final void draw(Canvas canvas, RectF cropBounds, RectF innerCropBounds) {
         clearArea(canvas, cropBounds, clearPaint);
         if (overlayConfig.shouldDrawGrid()) {
             drawGrid(canvas, cropBounds, gridPaint);
         }
         drawBorders(canvas, cropBounds, borderPaint);
+        drawInnerBorders(canvas, innerCropBounds, innerBorderPaint);
     }
 
     public void drawCorner(Canvas canvas, float x, float y, float deltaX, float deltaY) {
@@ -75,6 +78,8 @@ public abstract class CropIwaShape implements ConfigChangeListener {
     protected abstract void clearArea(Canvas canvas, RectF cropBounds, Paint clearPaint);
 
     protected abstract void drawBorders(Canvas canvas, RectF cropBounds, Paint paint);
+
+    protected abstract void drawInnerBorders(Canvas canvas, RectF cropBounds, Paint paint);
 
     protected void drawGrid(Canvas canvas, RectF cropBounds, Paint paint) {
         float stepX = cropBounds.width() * 0.333f;
@@ -101,5 +106,7 @@ public abstract class CropIwaShape implements ConfigChangeListener {
         gridPaint.setStrokeWidth(overlayConfig.getGridStrokeWidth());
         borderPaint.setColor(overlayConfig.getBorderColor());
         borderPaint.setStrokeWidth(overlayConfig.getBorderStrokeWidth());
+        innerBorderPaint.setColor(Color.BLACK);
+        innerBorderPaint.setStrokeWidth(overlayConfig.getBorderStrokeWidth() * CropIwaOverlayConfig.INNER_BORDER_FACTOR);
     }
 }

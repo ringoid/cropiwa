@@ -38,6 +38,14 @@ public class CropIwaOvalShape extends CropIwaShape {
     }
 
     @Override
+    protected void drawInnerBorders(Canvas canvas, RectF cropBounds, Paint paint) {
+        canvas.drawOval(cropBounds, paint);
+        if (overlayConfig.isDynamicCrop()) {
+            canvas.drawRect(cropBounds, paint);
+        }
+    }
+
+    @Override
     protected void drawGrid(Canvas canvas, RectF cropBounds, Paint paint) {
         clipPath.rewind();
         clipPath.addOval(cropBounds, Path.Direction.CW);
