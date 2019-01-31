@@ -83,7 +83,7 @@ public class CropIwaView extends FrameLayout {
             throw new IllegalStateException("imageConfig must be initialized before calling this method");
         }
         imageView = new CropIwaImageView(getContext(), imageConfig);
-        imageView.setBackgroundColor(Color.WHITE);
+        imageView.setBackgroundColor(Color.BLACK);
         gestureDetector = imageView.getImageTransformGestureDetector();
         addView(imageView);
     }
