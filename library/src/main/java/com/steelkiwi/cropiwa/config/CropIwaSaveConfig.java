@@ -2,8 +2,7 @@ package com.steelkiwi.cropiwa.config;
 
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.support.annotation.IntRange;
-
+import androidx.annotation.IntRange;
 import com.steelkiwi.cropiwa.image.CropIwaBitmapManager;
 /**
  * @author Yaroslav Polyakov https://github.com/polyak01

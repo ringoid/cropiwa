@@ -15,3 +15,7 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+
+-dontwarn com.steelkiwi.cropiwa.**
+-keep class com.steelkiwi.cropiwa.**
+-keep interface com.steelkiwi.cropiwa.**
