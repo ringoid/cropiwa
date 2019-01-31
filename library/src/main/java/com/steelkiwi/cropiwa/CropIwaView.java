@@ -182,6 +182,10 @@ public class CropIwaView extends FrameLayout {
         overlayView.setDrawOverlay(true);
     }
 
+    public void clear() {
+        imageView.setImageDrawable(null);
+    }
+
     public void crop(CropIwaSaveConfig saveConfig) {
         CropArea cropArea = CropArea.create(
                 imageView.getImageRect(),
