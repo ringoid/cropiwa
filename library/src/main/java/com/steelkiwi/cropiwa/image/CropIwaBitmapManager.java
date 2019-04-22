@@ -245,7 +245,7 @@ public class CropIwaBitmapManager {
                 return ExifInterface.ORIENTATION_UNDEFINED;
             }
             return new ImageHeaderParser(is).getOrientation();
-        } catch (IOException e) {
+        } catch (Throwable e) {
             CropIwaLog.e(e.getMessage(), e);
             return ExifInterface.ORIENTATION_UNDEFINED;
         } finally {
