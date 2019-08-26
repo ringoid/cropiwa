@@ -7,6 +7,8 @@ import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Bundle;
 
+import com.steelkiwi.cropiwa.util.CropException;
+
 /**
  * @author yarolegovich
  * 25.02.2017.
@@ -36,7 +38,9 @@ public class CropIwaResultReceiver extends BroadcastReceiver {
         Bundle extras = intent.getExtras();
         if (listener != null) {
             if (extras.containsKey(EXTRA_ERROR)) {
-                listener.onCropFailed((Throwable) extras.getSerializable(EXTRA_ERROR));
+                Throwable cause = (Throwable) extras.getSerializable(EXTRA_ERROR);
+                CropException error = new CropException(cause);
+                listener.onCropFailed(error);
             } else if (extras.containsKey(EXTRA_URI)) {
                 listener.onCropSuccess((Uri) extras.getParcelable(EXTRA_URI));
             }

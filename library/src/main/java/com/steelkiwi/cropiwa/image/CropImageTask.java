@@ -7,6 +7,7 @@ import android.os.AsyncTask;
 
 import com.steelkiwi.cropiwa.config.CropIwaSaveConfig;
 import com.steelkiwi.cropiwa.shape.CropIwaShapeMask;
+import com.steelkiwi.cropiwa.util.CropIwaLog;
 import com.steelkiwi.cropiwa.util.CropIwaUtils;
 
 import java.io.IOException;
@@ -52,12 +53,18 @@ class CropImageTask extends AsyncTask<Void, Void, Throwable> {
 
             Uri dst = saveConfig.getDstUri();
             OutputStream os = context.getContentResolver().openOutputStream(dst);
-            cropped.compress(saveConfig.getCompressFormat(), saveConfig.getQuality(), os);
-            CropIwaUtils.closeSilently(os);
-
-            bitmap.recycle();
-            cropped.recycle();
+            try {
+                cropped.compress(saveConfig.getCompressFormat(), saveConfig.getQuality(), os);
+            } catch (Throwable e) {
+                CropIwaLog.breadcrumb("Failed to output bitmap");
+                throw e;  // pass exception further
+            } finally {
+                CropIwaUtils.closeSilently(os);
+                bitmap.recycle();
+                cropped.recycle();
+            }
         } catch (IOException | IllegalArgumentException e) {
+            CropIwaLog.breadcrumb("Error [" + e.getClass().getCanonicalName() + "]: " + e.getMessage());
             return e;
         }
         return null;

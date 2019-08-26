@@ -113,28 +113,44 @@ public class CropIwaBitmapManager {
         Bitmap result = tryLoadBitmap(context, localResUri, options);
 
         if (result != null) {
-            CropIwaLog.d("loaded image with dimensions {width=%d, height=%d}",
+            String log = CropIwaLog.d("loaded image with dimensions {width=%d, height=%d}",
                     result.getWidth(),
                     result.getHeight());
+            CropIwaLog.breadcrumb(log);
+        } else {
+            CropIwaLog.breadcrumb("Bitmap null");
         }
 
         return result;
     }
 
-    private Bitmap tryLoadBitmap(Context context, Uri uri, BitmapFactory.Options options) throws FileNotFoundException {
+    private Bitmap tryLoadBitmap(Context context, Uri uri, BitmapFactory.Options options) throws IOException {
         Bitmap result;
         while (true) {
+            CropIwaLog.breadcrumb("Load bitmap from: " + uri.toString());
             InputStream is = context.getContentResolver().openInputStream(uri);
             try {
+                CropIwaLog.breadcrumb("Bitmap exists");
                 result = BitmapFactory.decodeStream(is, null, options);
             } catch (OutOfMemoryError error) {
-                if (options.inSampleSize < 64) {
+                /**
+                 * Give it a try to decode smaller bitmap.
+                 * @see https://stackoverflow.com/questions/7138645/catching-outofmemoryerror-in-decoding-bitmap
+                 */
+                System.gc();  // reclaim bitmap memory
+                CropIwaLog.breadcrumb("OOM: " + error.getMessage());
+                if (options.inSampleSize < 128) {
                     options.inSampleSize *= 2;
+                    CropIwaLog.breadcrumb("OMM recover");
                     continue;
                 } else {
+                    CropIwaLog.breadcrumb("OOM fatal");
                     return null;
                 }
+            } finally {
+                CropIwaUtils.closeSilently(is);
             }
+            CropIwaLog.breadcrumb("Bitmap decoded");
             return ensureCorrectRotation(context, uri, result);
         }
     }
@@ -211,6 +227,10 @@ public class CropIwaBitmapManager {
     }
 
     private static Bitmap ensureCorrectRotation(Context context, Uri uri, Bitmap bitmap) {
+        if (bitmap == null) {
+            return null;
+        }
+
         int degrees = exifToDegrees(extractExifOrientation(context, uri));
         if (degrees != 0) {
             Matrix matrix = new Matrix();
