@@ -4,6 +4,8 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.graphics.RectF;
 
+import com.steelkiwi.cropiwa.util.CropIwaLog;
+
 /**
  * @author yarolegovich
  * 25.02.2017.
@@ -26,18 +28,23 @@ public class CropArea {
     private final Rect imageRect;
     private final Rect cropRect;
 
-    public CropArea(Rect imageRect, Rect cropRect) {
+    private CropArea(Rect imageRect, Rect cropRect) {
         this.imageRect = imageRect;
         this.cropRect = cropRect;
     }
 
-    public Bitmap applyCropTo(Bitmap bitmap) throws IllegalArgumentException {
+    Bitmap applyCropTo(Bitmap bitmap) throws IllegalArgumentException {
         Bitmap immutableCropped = Bitmap.createBitmap(bitmap,
                 findRealCoordinate(bitmap.getWidth(), cropRect.left, imageRect.width()),
                 findRealCoordinate(bitmap.getHeight(), cropRect.top, imageRect.height()),
                 findRealCoordinate(bitmap.getWidth(), cropRect.width(), imageRect.width()),
                 findRealCoordinate(bitmap.getHeight(), cropRect.height(), imageRect.height()));
-        return immutableCropped.copy(immutableCropped.getConfig(), true);
+        Bitmap.Config config = immutableCropped.getConfig();
+        if (config == null) {
+            CropIwaLog.breadcrumb("Failed to get config of bitmap");
+            throw new IllegalArgumentException("Failed to get config of bitmap");
+        }
+        return immutableCropped.copy(config, true);
     }
 
 
