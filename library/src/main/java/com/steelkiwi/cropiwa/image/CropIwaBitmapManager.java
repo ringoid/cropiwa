@@ -128,28 +128,37 @@ public class CropIwaBitmapManager {
         Bitmap result;
         while (true) {
             CropIwaLog.breadcrumb("Load bitmap from: " + uri.toString());
-            InputStream is = context.getContentResolver().openInputStream(uri);
+
             try {
-                CropIwaLog.breadcrumb("Bitmap exists");
-                result = BitmapFactory.decodeStream(is, null, options);
-            } catch (OutOfMemoryError error) {
-                /**
-                 * Give it a try to decode smaller bitmap.
-                 * @see https://stackoverflow.com/questions/7138645/catching-outofmemoryerror-in-decoding-bitmap
-                 */
-                System.gc();  // reclaim bitmap memory
-                CropIwaLog.breadcrumb("OOM: " + error.getMessage());
-                if (options.inSampleSize < 128) {
-                    options.inSampleSize *= 2;
-                    CropIwaLog.breadcrumb("OMM recover");
-                    continue;
-                } else {
-                    CropIwaLog.breadcrumb("OOM fatal");
-                    return null;
+                InputStream is = context.getContentResolver().openInputStream(uri);
+
+                // input stream for uri is opened
+                try {
+                    CropIwaLog.breadcrumb("Bitmap exists");
+                    result = BitmapFactory.decodeStream(is, null, options);
+                } catch (OutOfMemoryError error) {
+                    /**
+                     * Give it a try to decode smaller bitmap.
+                     * @see https://stackoverflow.com/questions/7138645/catching-outofmemoryerror-in-decoding-bitmap
+                     */
+                    System.gc();  // reclaim bitmap memory
+                    CropIwaLog.breadcrumb("OOM: " + error.getMessage());
+                    if (options.inSampleSize < 128) {
+                        options.inSampleSize *= 2;
+                        CropIwaLog.breadcrumb("OMM recover");
+                        continue;
+                    } else {
+                        CropIwaLog.breadcrumb("OOM fatal");
+                        return null;
+                    }
+                } finally {
+                    CropIwaUtils.closeSilently(is);
                 }
-            } finally {
-                CropIwaUtils.closeSilently(is);
+            } catch (SecurityException e) {
+                CropIwaLog.breadcrumb(e.getMessage());
+                throw new IOException(e);
             }
+
             CropIwaLog.breadcrumb("Bitmap decoded");
             return ensureCorrectRotation(context, uri, result);
         }
