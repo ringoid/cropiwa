@@ -34,6 +34,7 @@ public class CropArea {
     }
 
     Bitmap applyCropTo(Bitmap bitmap) throws IllegalArgumentException {
+        CropIwaLog.breadcrumb("applyCropTo: crop: " + cropRect.toShortString() + ", image: " + imageRect.toShortString());
         Bitmap immutableCropped = Bitmap.createBitmap(bitmap,
                 findRealCoordinate(bitmap.getWidth(), cropRect.left, imageRect.width()),
                 findRealCoordinate(bitmap.getHeight(), cropRect.top, imageRect.height()),
